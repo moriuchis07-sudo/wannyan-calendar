@@ -1,7 +1,7 @@
 {
-  "name": "わんにゃんまんまカレンダー",
-  "short_name": "まんまカレンダー",
-  "description": "ふたりの晩ごはん記録カレンダー",
+  "name": "わんにゃんお買い物メモ",
+  "short_name": "わんにゃん買い物",
+  "description": "ふたりのお買い物メモ帳",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#FFF8F5",
