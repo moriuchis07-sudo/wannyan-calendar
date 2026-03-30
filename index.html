@@ -531,6 +531,19 @@
     </button>
   </header>
 
+  <!-- Sync bar -->
+  <div style="background:#FFF0E8;border-bottom:1px solid var(--border);padding:7px 16px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:var(--text-light);">ルームコード:</span>
+      <span style="font-size:14px;font-weight:800;color:var(--primary);letter-spacing:2px;" id="room-code-display">------</span>
+      <button onclick="copyRoomCode()" style="background:var(--primary-light);border:none;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--primary);cursor:pointer;">コピー</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;font-weight:600;" id="sync-status">⟳ 接続中...</span>
+      <button onclick="showRoomModal()" style="background:white;border:1.5px solid var(--border);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;">変更</button>
+    </div>
+  </div>
+
   <!-- Current user badge -->
   <div id="user-badge" class="user-badge papa">
     <div class="user-badge-icon" id="badge-icon">🐶</div>
@@ -605,6 +618,29 @@
   </div>
 </div>
 
+<!-- Room Modal -->
+<div class="modal-overlay" id="room-modal" onclick="if(event.target===this)closeRoomModal()">
+  <div class="modal" style="padding:28px 20px;">
+    <div class="modal-handle"></div>
+    <div class="modal-date">🔗 ルームコード設定</div>
+    <p style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:20px;line-height:1.6;">
+      パートナーと同じルームコードを入力すると<br>リストがリアルタイムで同期されます！
+    </p>
+    <div style="background:var(--bg);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:11px;color:var(--text-light);margin-bottom:6px;">現在のルームコード</div>
+      <div style="font-size:28px;font-weight:800;color:var(--primary);letter-spacing:4px;" id="room-modal-current"></div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--text-light);margin-bottom:8px;">パートナーのコードを入力</div>
+    <input type="text" id="room-input" placeholder="例: ABC123"
+      style="width:100%;background:white;border:2px solid var(--border);border-radius:14px;padding:14px;font-size:18px;font-weight:700;letter-spacing:3px;text-align:center;text-transform:uppercase;font-family:inherit;color:var(--text);outline:none;margin-bottom:14px;"
+      maxlength="8" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRoomModal()">キャンセル</button>
+      <button class="btn-save" onclick="applyRoomCode()">🔗 接続する</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -614,12 +650,21 @@
   let currentTab = 'all';
   let currentCategory = '';
   let items = [];
-  const STORAGE_KEY = 'wannyan_shopping_v1';
+  let roomId = null;
+  let lastServerUpdatedAt = 0;
+  let syncInterval = null;
+  let isSyncing = false;
+
+  const STORAGE_KEY = 'wannyan_shopping_v2';
   const USER_KEY = 'wannyan_user_v1';
+  const ROOM_KEY = 'wannyan_room_v1';
 
   // ===== INIT =====
   function init() {
-    loadItems();
+    loadLocal();
+    roomId = localStorage.getItem(ROOM_KEY) || generateRoomId();
+    localStorage.setItem(ROOM_KEY, roomId);
+
     const savedUser = localStorage.getItem(USER_KEY);
     if (savedUser) {
       currentUser = savedUser;
@@ -629,30 +674,102 @@
     }
   }
 
-  function loadItems() {
+  function generateRoomId() {
+    return Math.random().toString(36).slice(2, 8).toUpperCase();
+  }
+
+  function loadLocal() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       items = raw ? JSON.parse(raw) : [];
+    } catch(e) { items = []; }
+  }
+
+  function saveLocal() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  // ===== SYNC =====
+  async function pushToServer() {
+    if (!roomId) return;
+    const updatedAt = Date.now();
+    try {
+      setSyncStatus('syncing');
+      const res = await fetch(`/api/shopping?room=${roomId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, updatedAt })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        lastServerUpdatedAt = data.updatedAt || updatedAt;
+        setSyncStatus('ok');
+      } else {
+        setSyncStatus('error');
+      }
     } catch(e) {
-      items = [];
+      setSyncStatus('offline');
     }
   }
 
-  function saveItems() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  async function pullFromServer() {
+    if (!roomId || isSyncing) return;
+    isSyncing = true;
+    try {
+      const res = await fetch(`/api/shopping?room=${roomId}`);
+      if (!res.ok) { setSyncStatus('error'); return; }
+      const data = await res.json();
+      // Only update if server has newer data than what we last synced
+      if (data.updatedAt && data.updatedAt > lastServerUpdatedAt) {
+        items = data.items || [];
+        lastServerUpdatedAt = data.updatedAt;
+        saveLocal();
+        renderList();
+        setSyncStatus('ok');
+      } else {
+        setSyncStatus('ok');
+      }
+    } catch(e) {
+      setSyncStatus('offline');
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  function startSync() {
+    pullFromServer(); // immediate first pull
+    if (syncInterval) clearInterval(syncInterval);
+    syncInterval = setInterval(pullFromServer, 5000); // poll every 5s
+  }
+
+  function setSyncStatus(status) {
+    const el = document.getElementById('sync-status');
+    if (!el) return;
+    const map = {
+      syncing: { text: '⟳ 同期中...', color: '#FFB347' },
+      ok:      { text: '✓ 同期済み',  color: '#4CD964' },
+      offline: { text: '✕ オフライン', color: '#FF6B6B' },
+      error:   { text: '! エラー',    color: '#FF6B6B' }
+    };
+    const s = map[status] || map.ok;
+    el.textContent = s.text;
+    el.style.color = s.color;
   }
 
   // ===== USER SELECTION =====
   function showUserSelectScreen() {
     document.getElementById('user-select-screen').classList.remove('hidden');
     document.getElementById('app').classList.add('hidden');
+    if (syncInterval) clearInterval(syncInterval);
   }
 
   function showApp() {
     document.getElementById('user-select-screen').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     updateUserUI();
+    updateRoomUI();
     renderList();
+    startSync();
   }
 
   function selectUser(user) {
@@ -676,6 +793,44 @@
     document.getElementById('current-user-icon').textContent = isPapa ? '🐶' : '🐱';
   }
 
+  // ===== ROOM UI =====
+  function updateRoomUI() {
+    const el = document.getElementById('room-code-display');
+    if (el) el.textContent = roomId;
+  }
+
+  function showRoomModal() {
+    document.getElementById('room-modal').classList.add('open');
+    document.getElementById('room-input').value = '';
+    document.getElementById('room-modal-current').textContent = roomId;
+  }
+
+  function closeRoomModal() {
+    document.getElementById('room-modal').classList.remove('open');
+  }
+
+  function applyRoomCode() {
+    const code = document.getElementById('room-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    if (!code || code.length < 4) { showToast('ルームコードを4文字以上入力してください'); return; }
+    roomId = code;
+    localStorage.setItem(ROOM_KEY, roomId);
+    lastServerUpdatedAt = 0; // force re-pull
+    items = [];
+    saveLocal();
+    updateRoomUI();
+    closeRoomModal();
+    startSync();
+    showToast('🔗 ルームコード「' + roomId + '」に接続しました');
+  }
+
+  function copyRoomCode() {
+    navigator.clipboard.writeText(roomId).then(() => {
+      showToast('📋 ルームコード「' + roomId + '」をコピーしました！');
+    }).catch(() => {
+      showToast('ルームコード: ' + roomId);
+    });
+  }
+
   // ===== CATEGORIES =====
   function selectCategory(el, cat) {
     currentCategory = cat;
@@ -697,22 +852,19 @@
     const input = document.getElementById('item-input');
     const qtyInput = document.getElementById('qty-input');
     const name = input.value.trim();
-    if (!name) {
-      input.focus();
-      return;
-    }
+    if (!name) { input.focus(); return; }
     const qty = qtyInput.value.trim();
     const item = {
       id: Date.now() + Math.random(),
-      name,
-      qty,
+      name, qty,
       category: currentCategory || '',
       user: currentUser,
       checked: false,
       createdAt: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
     };
     items.unshift(item);
-    saveItems();
+    saveLocal();
+    pushToServer();
     input.value = '';
     qtyInput.value = '';
     renderList();
@@ -726,7 +878,8 @@
     if (!item) return;
     item.checked = !item.checked;
     if (item.checked) item.checkedAt = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-    saveItems();
+    saveLocal();
+    pushToServer();
     renderList();
   }
 
@@ -734,7 +887,8 @@
   function deleteItem(id, event) {
     event.stopPropagation();
     items = items.filter(i => i.id !== id);
-    saveItems();
+    saveLocal();
+    pushToServer();
     renderList();
     showToast('削除しました');
   }
@@ -745,7 +899,8 @@
     if (count === 0) { showToast('完了済みのアイテムはありません'); return; }
     if (!confirm(count + '件の完了済みアイテムを削除しますか？')) return;
     items = items.filter(i => !i.checked);
-    saveItems();
+    saveLocal();
+    pushToServer();
     renderList();
     showToast('✅ ' + count + '件削除しました');
   }
@@ -753,30 +908,23 @@
   // ===== RENDER =====
   function renderList() {
     const container = document.getElementById('list-container');
-
-    // Filter
     let filtered = items.slice();
     if (currentTab === 'papa') filtered = filtered.filter(i => i.user === 'papa');
     if (currentTab === 'mama') filtered = filtered.filter(i => i.user === 'mama');
     if (currentCategory) filtered = filtered.filter(i => i.category === currentCategory);
 
-    // Sort: unchecked first, then checked
     const unchecked = filtered.filter(i => !i.checked);
     const checked = filtered.filter(i => i.checked);
 
-    // Stats
     const allUnchecked = items.filter(i => !i.checked);
     document.getElementById('stat-total').textContent = allUnchecked.length;
     document.getElementById('stat-papa').textContent = allUnchecked.filter(i => i.user === 'papa').length;
     document.getElementById('stat-mama').textContent = allUnchecked.filter(i => i.user === 'mama').length;
     document.getElementById('stat-done').textContent = items.filter(i => i.checked).length;
-
-    // Tab badges
     document.getElementById('badge-all').textContent = items.filter(i => !i.checked).length;
     document.getElementById('badge-papa').textContent = items.filter(i => i.user === 'papa' && !i.checked).length;
     document.getElementById('badge-mama').textContent = items.filter(i => i.user === 'mama' && !i.checked).length;
 
-    // Render
     if (unchecked.length === 0 && checked.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
@@ -788,17 +936,14 @@
     }
 
     let html = '';
-
     if (unchecked.length > 0) {
       html += `<div class="list-section-header">📋 未購入 (${unchecked.length}件)</div>`;
       unchecked.forEach(item => { html += renderItem(item); });
     }
-
     if (checked.length > 0) {
       html += `<div class="list-section-header" style="margin-top:16px">✅ 購入済み (${checked.length}件)</div>`;
       checked.forEach(item => { html += renderItem(item); });
     }
-
     container.innerHTML = html;
   }
 
