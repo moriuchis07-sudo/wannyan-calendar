@@ -37,86 +37,14 @@
       min-height: -webkit-fill-available;
     }
 
-    /* ===== USER SELECT SCREEN ===== */
-    #user-select-screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(160deg, #FFF8F5 0%, #FFE8D8 50%, #FFF0F8 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 24px;
-    }
-    #user-select-screen.hidden { display: none; }
-    .us-pet-img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid white;
-      box-shadow: 0 8px 32px rgba(255,140,105,0.3);
-      margin-bottom: 20px;
-    }
-    .us-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-    .us-subtitle {
-      font-size: 14px;
-      color: var(--text-light);
-      margin-bottom: 36px;
-      text-align: center;
-    }
-    .us-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-light);
-      margin-bottom: 16px;
-      letter-spacing: 0.5px;
-    }
-    .us-buttons {
-      display: flex;
-      gap: 16px;
-      width: 100%;
-      max-width: 320px;
-    }
-    .us-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      padding: 20px 12px;
-      border-radius: 20px;
-      border: 3px solid transparent;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    }
-    .us-btn.papa { border-color: var(--papa); }
-    .us-btn.mama { border-color: var(--mama); }
-    .us-btn:active { transform: scale(0.95); }
-    .us-btn-icon { font-size: 48px; line-height: 1; }
-    .us-btn-name { font-size: 16px; font-weight: 700; }
-    .us-btn.papa .us-btn-name { color: var(--papa); }
-    .us-btn.mama .us-btn-name { color: var(--mama); }
-    .us-btn-desc { font-size: 11px; color: var(--text-light); text-align: center; }
-
     /* ===== MAIN APP ===== */
     #app { display: flex; flex-direction: column; min-height: 100vh; min-height: -webkit-fill-available; }
-    #app.hidden { display: none; }
 
     /* Header */
     .header {
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      padding: 12px 16px;
-      padding-top: max(12px, env(safe-area-inset-top));
+      padding: 10px 16px;
+      padding-top: max(10px, env(safe-area-inset-top));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -127,48 +55,36 @@
     }
     .header-left { display: flex; align-items: center; gap: 10px; }
     .pet-circle {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid rgba(255,255,255,0.8);
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    .header-title { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.3px; text-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-    .header-subtitle { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 1px; }
-    .switch-user-btn {
-      background: rgba(255,255,255,0.25);
-      border: 1.5px solid rgba(255,255,255,0.5);
-      border-radius: 20px;
-      padding: 6px 12px;
-      color: white;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: inherit;
+    .header-title { font-size: 16px; font-weight: 800; color: white; letter-spacing: 0.3px; text-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    .header-subtitle { font-size: 10px; color: rgba(255,255,255,0.85); margin-top: 1px; }
+
+    /* User toggle button in add bar */
+    .user-toggle-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      border: 2.5px solid var(--papa);
+      background: var(--papa-light);
+      font-size: 22px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.18s;
     }
-    .switch-user-btn:active { background: rgba(255,255,255,0.4); }
-
-    /* User Badge */
-    .user-badge {
-      margin: 14px 16px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      font-weight: 600;
+    .user-toggle-btn.mama {
+      border-color: var(--mama);
+      background: var(--mama-light);
     }
-    .user-badge.papa { background: var(--papa-light); color: var(--papa); }
-    .user-badge.mama { background: var(--mama-light); color: var(--mama); }
-    .user-badge-icon { font-size: 22px; }
-    .user-badge-text { flex: 1; }
-    .user-badge-name { font-size: 15px; font-weight: 700; }
-    .user-badge-sub { font-size: 11px; opacity: 0.8; }
+    .user-toggle-btn:active { transform: scale(0.88); }
 
     /* Tabs */
     .tabs {
@@ -495,28 +411,8 @@
 </head>
 <body>
 
-<!-- User Select Screen -->
-<div id="user-select-screen">
-  <img src="pets.jpg" alt="わんにゃん" class="us-pet-img">
-  <div class="us-title">わんにゃんお買い物</div>
-  <div class="us-subtitle">どっちがお買い物するの？<br>名前を選んでね🛒</div>
-  <div class="us-label">あなたはどっち？</div>
-  <div class="us-buttons">
-    <button class="us-btn papa" onclick="selectUser('papa')">
-      <div class="us-btn-icon">🐶</div>
-      <div class="us-btn-name">わん</div>
-      <div class="us-btn-desc">イヌ担当</div>
-    </button>
-    <button class="us-btn mama" onclick="selectUser('mama')">
-      <div class="us-btn-icon">🐱</div>
-      <div class="us-btn-name">にゃん</div>
-      <div class="us-btn-desc">ネコ担当</div>
-    </button>
-  </div>
-</div>
-
 <!-- Main App -->
-<div id="app" class="hidden">
+<div id="app">
   <header class="header">
     <div class="header-left">
       <img src="pets.jpg" alt="わんにゃん" class="pet-circle">
@@ -525,33 +421,16 @@
         <div class="header-subtitle">ふたりのお買い物メモ</div>
       </div>
     </div>
-    <button class="switch-user-btn" onclick="showUserSelect()">
-      <span id="current-user-icon">🐶</span>
-      <span>切替</span>
-    </button>
-  </header>
-
-  <!-- Sync bar -->
-  <div style="background:#FFF0E8;border-bottom:1px solid var(--border);padding:7px 16px;display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-size:12px;color:var(--text-light);">ルームコード:</span>
-      <span style="font-size:14px;font-weight:800;color:var(--primary);letter-spacing:2px;" id="room-code-display">------</span>
-      <button onclick="copyRoomCode()" style="background:var(--primary-light);border:none;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--primary);cursor:pointer;">コピー</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
       <span style="font-size:11px;font-weight:600;" id="sync-status">⟳ 接続中...</span>
-      <button onclick="showRoomModal()" style="background:white;border:1.5px solid var(--border);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;">変更</button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.8);">🔗</span>
+        <span style="font-size:13px;font-weight:800;color:white;letter-spacing:1.5px;" id="room-code-display">------</span>
+        <button onclick="copyRoomCode()" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:white;cursor:pointer;font-family:inherit;">コピー</button>
+        <button onclick="showRoomModal()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);cursor:pointer;font-family:inherit;">変更</button>
+      </div>
     </div>
-  </div>
-
-  <!-- Current user badge -->
-  <div id="user-badge" class="user-badge papa">
-    <div class="user-badge-icon" id="badge-icon">🐶</div>
-    <div class="user-badge-text">
-      <div class="user-badge-name" id="badge-name">わんモード</div>
-      <div class="user-badge-sub">あなたが追加したものは 🐶 で表示されます</div>
-    </div>
-  </div>
+  </header>
 
   <!-- Category chips -->
   <div class="category-selector" id="category-chips">
@@ -568,9 +447,10 @@
 
   <!-- Add item -->
   <div class="add-bar">
+    <button class="user-toggle-btn" id="user-toggle-btn" onclick="toggleUser()">🐶</button>
     <input type="text" class="add-input" id="item-input" placeholder="買い物を追加..." maxlength="40"
            onkeydown="if(event.key==='Enter') addItem()">
-    <div class="add-input-small" style="max-width:90px">
+    <div class="add-input-small" style="max-width:76px">
       <input type="text" id="qty-input" placeholder="数量" style="width:100%;border:none;outline:none;font-family:inherit;font-size:13px;color:var(--text);background:transparent;" maxlength="10">
     </div>
     <button class="add-btn" onclick="addItem()">＋</button>
@@ -664,14 +544,9 @@
     loadLocal();
     roomId = localStorage.getItem(ROOM_KEY) || generateRoomId();
     localStorage.setItem(ROOM_KEY, roomId);
-
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) {
-      currentUser = savedUser;
-      showApp();
-    } else {
-      showUserSelectScreen();
-    }
+    currentUser = localStorage.getItem(USER_KEY) || 'papa';
+    localStorage.setItem(USER_KEY, currentUser);
+    showApp();
   }
 
   function generateRoomId() {
@@ -756,41 +631,28 @@
     el.style.color = s.color;
   }
 
-  // ===== USER SELECTION =====
-  function showUserSelectScreen() {
-    document.getElementById('user-select-screen').classList.remove('hidden');
-    document.getElementById('app').classList.add('hidden');
-    if (syncInterval) clearInterval(syncInterval);
-  }
-
+  // ===== USER =====
   function showApp() {
-    document.getElementById('user-select-screen').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
     updateUserUI();
     updateRoomUI();
     renderList();
     startSync();
   }
 
-  function selectUser(user) {
-    currentUser = user;
-    localStorage.setItem(USER_KEY, user);
-    showApp();
-  }
-
-  function showUserSelect() {
-    showUserSelectScreen();
+  function toggleUser() {
+    currentUser = currentUser === 'papa' ? 'mama' : 'papa';
+    localStorage.setItem(USER_KEY, currentUser);
+    updateUserUI();
+    showToast(currentUser === 'papa' ? '🐶 わんに切替えました' : '🐱 にゃんに切替えました');
   }
 
   function updateUserUI() {
     const isPapa = currentUser === 'papa';
-    const badge = document.getElementById('user-badge');
-    badge.className = 'user-badge ' + currentUser;
-    document.getElementById('badge-icon').textContent = isPapa ? '🐶' : '🐱';
-    document.getElementById('badge-name').textContent = isPapa ? 'わんモード 🐶' : 'にゃんモード 🐱';
-    document.getElementById('badge-name').nextElementSibling.textContent =
-      `あなたが追加したものは ${isPapa ? '🐶' : '🐱'} で表示されます`;
-    document.getElementById('current-user-icon').textContent = isPapa ? '🐶' : '🐱';
+    const btn = document.getElementById('user-toggle-btn');
+    btn.textContent = isPapa ? '🐶' : '🐱';
+    btn.className = 'user-toggle-btn' + (isPapa ? '' : ' mama');
+    const input = document.getElementById('item-input');
+    input.placeholder = (isPapa ? '🐶 わん：' : '🐱 にゃん：') + '買い物を追加...';
   }
 
   // ===== ROOM UI =====
