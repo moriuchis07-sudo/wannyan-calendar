@@ -1,0 +1,18 @@
+{
+  "name": "わんにゃんまんまカレンダー",
+  "short_name": "まんまカレンダー",
+  "description": "ふたりの晩ごはん記録カレンダー",
+  "start_url": "./calendar.html",
+  "display": "standalone",
+  "background_color": "#FFF8F5",
+  "theme_color": "#FF8C69",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "dogcat.jpg.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
