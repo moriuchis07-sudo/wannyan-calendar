@@ -13,773 +13,606 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     :root {
-      --papa: #4A90D9;
-      --papa-light: #C8E0F8;
-      --mama: #E05C9A;
-      --mama-light: #F8C8E0;
-      --primary: #FF8C69;
-      --primary-light: #FFD4C2;
+      --wan: #4A90D9; --wan-light: #C8E0F8;
+      --nyan: #E05C9A; --nyan-light: #F8C8E0;
+      --primary: #FF8C69; --primary-light: #FFD4C2; --primary-dark: #E05C30;
       --accent: #FFB347;
-      --bg: #FFF8F5;
-      --card: #FFFFFF;
-      --text: #3D2B1F;
-      --text-light: #8B6959;
-      --border: #F0D5C8;
+      --bg: #FFF8F5; --card: #FFFFFF;
+      --text: #3D2B1F; --text-light: #8B6959; --border: #F0D5C8;
       --radius: 16px;
-      --checked-bg: #F5F5F5;
-      --checked-text: #BBBBBB;
     }
-    body {
-      font-family: -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-    }
+    body { font-family: -apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ===== MAIN APP ===== */
-    #app { display: flex; flex-direction: column; min-height: 100vh; min-height: -webkit-fill-available; }
-
-    /* Header */
+    /* ── Header ── */
     .header {
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
       padding: 10px 16px;
       padding-top: max(10px, env(safe-area-inset-top));
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(255,140,105,0.3);
     }
     .header-left { display: flex; align-items: center; gap: 10px; }
-    .pet-circle {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(255,255,255,0.8);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    .header-img {
+      width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.85);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
-    .header-title { font-size: 16px; font-weight: 800; color: white; letter-spacing: 0.3px; text-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    .header-title { font-size: 16px; font-weight: 800; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.15); }
     .header-subtitle { font-size: 10px; color: rgba(255,255,255,0.85); margin-top: 1px; }
-
-    /* User toggle button in add bar */
-    .user-toggle-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      border: 3px solid var(--papa);
-      background: var(--papa-light);
-      padding: 0;
-      overflow: hidden;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.18s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .user-toggle-btn.mama { border-color: var(--mama); }
-    .user-toggle-btn img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-    .user-toggle-btn:active { transform: scale(0.88); }
-
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      padding: 12px 16px 0;
-      background: var(--bg);
-    }
-    .tab {
-      flex: 1;
-      padding: 9px 8px;
-      border-radius: 12px;
-      border: 2px solid var(--border);
-      background: white;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-light);
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-    .tab.active {
-      border-color: var(--primary);
-      background: var(--primary);
-      color: white;
-    }
-    .tab:active { opacity: 0.8; }
-    .tab-badge {
-      background: rgba(255,255,255,0.3);
-      border-radius: 10px;
-      padding: 1px 6px;
-      font-size: 11px;
-    }
-    .tab:not(.active) .tab-badge {
-      background: var(--primary-light);
-      color: var(--primary);
+    .sync-badge {
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.18); border-radius: 10px; padding: 4px 10px;
     }
 
-    /* Add Item Bar */
-    .add-bar {
-      padding: 12px 16px;
-      display: flex;
-      gap: 8px;
-      background: var(--bg);
+    /* ── Input Panel ── */
+    .input-panel {
+      background: var(--card);
+      padding: 14px 16px 12px;
       border-bottom: 1px solid var(--border);
     }
-    .add-input {
-      flex: 1;
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 11px 14px;
-      font-size: 15px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s;
+    .user-toggle-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .user-btn {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 14px; border: 2.5px solid var(--border);
+      background: var(--bg); cursor: pointer; transition: all 0.18s; font-family: inherit;
     }
-    .add-input:focus { border-color: var(--primary); }
-    .add-input::placeholder { color: var(--text-light); opacity: 0.6; }
+    .user-btn.active.wan { border-color: var(--wan); background: var(--wan-light); }
+    .user-btn.active.nyan { border-color: var(--nyan); background: var(--nyan-light); }
+    .user-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .user-btn-label { font-size: 13px; font-weight: 700; color: var(--text-light); }
+    .user-btn.active.wan .user-btn-label { color: var(--wan); }
+    .user-btn.active.nyan .user-btn-label { color: var(--nyan); }
+    .user-btn:active { transform: scale(0.96); }
+
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .text-input {
+      flex: 1; background: var(--bg); border: 2px solid var(--border);
+      border-radius: 14px; padding: 11px 14px; font-size: 15px;
+      font-family: inherit; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .text-input:focus { border-color: var(--primary); }
+    .text-input::placeholder { color: var(--text-light); opacity: 0.6; }
+    .qty-input {
+      width: 68px; background: var(--bg); border: 2px solid var(--border);
+      border-radius: 14px; padding: 11px 8px; font-size: 13px; font-family: inherit;
+      color: var(--text); outline: none; text-align: center; transition: border-color 0.2s;
+    }
+    .qty-input:focus { border-color: var(--primary); }
+    .qty-input::placeholder { color: var(--text-light); opacity: 0.6; font-size: 12px; }
     .add-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
+      width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      border: none;
-      color: white;
-      font-size: 24px;
-      font-family: inherit;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 3px 10px rgba(255,140,105,0.4);
-      transition: opacity 0.2s, transform 0.15s;
-      flex-shrink: 0;
+      border: none; color: white; font-size: 26px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 3px 10px rgba(255,140,105,0.4); transition: opacity 0.15s, transform 0.15s;
     }
-    .add-btn:active { opacity: 0.85; transform: scale(0.93); }
+    .add-btn:active { opacity: 0.82; transform: scale(0.92); }
 
-    /* List */
-    .list-container {
-      flex: 1;
-      padding: 12px 16px;
+    /* ── Category Tabs ── */
+    .category-scroll {
+      display: flex; gap: 6px; padding: 10px 16px 0;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card);
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 12px; font-weight: 600; color: var(--text-light);
+      cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: inherit;
+    }
+    .cat-tab.active {
+      background: var(--primary); border-color: var(--primary); color: white;
+    }
+    .cat-tab:active { transform: scale(0.94); }
+
+    /* ── Suggestion Chips ── */
+    .suggestion-area {
+      background: var(--card);
+      padding: 8px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .suggestion-area.hidden { display: none; }
+    .suggestion-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sugg-chip {
+      padding: 6px 13px; border-radius: 20px;
+      background: var(--primary-light); border: 1.5px solid var(--primary-light);
+      color: var(--primary-dark); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .sugg-chip:active { background: var(--primary); color: white; transform: scale(0.94); }
+    .sugg-chip.custom { background: #F0EAF8; border-color: #DDD0F0; color: #6A4C9C; }
+
+    /* ── Filter Tabs ── */
+    .filter-tabs {
+      display: flex; gap: 6px; padding: 10px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .filter-tab {
+      flex: 1; padding: 8px 6px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-light);
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .filter-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .filter-tab:active { opacity: 0.8; }
+    .f-badge {
+      font-size: 10px; padding: 1px 5px; border-radius: 8px;
+      background: rgba(255,255,255,0.3);
+    }
+    .filter-tab:not(.active) .f-badge { background: var(--primary-light); color: var(--primary); }
+
+    /* ── List ── */
+    .list-wrap {
+      padding: 10px 16px;
       padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
     }
-
-    .list-section-header {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-light);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      padding: 8px 4px 6px;
+    .list-section-title {
+      font-size: 11px; font-weight: 700; color: var(--text-light);
+      letter-spacing: 0.8px; text-transform: uppercase; padding: 6px 2px 5px;
     }
-
     .item-card {
-      background: white;
-      border-radius: 14px;
-      padding: 14px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1.5px solid var(--border);
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .item-card.checked {
-      background: var(--checked-bg);
-      border-color: #E8E8E8;
-      box-shadow: none;
+      background: var(--card); border-radius: 14px; padding: 12px 12px;
+      margin-bottom: 7px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06); border: 1.5px solid var(--border);
+      cursor: pointer; transition: transform 0.12s;
     }
     .item-card:active { transform: scale(0.98); }
-
-    .item-check {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      border: 2.5px solid var(--border);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s;
+    .item-card.checked { background: #F7F7F7; border-color: #E8E8E8; box-shadow: none; }
+    .check-circle {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      border: 2.5px solid var(--border); background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: all 0.18s;
     }
-    .item-card.checked .item-check {
-      background: #4CD964;
-      border-color: #4CD964;
-      color: white;
-      font-size: 14px;
-    }
-    .item-card.papa-item .item-check { border-color: var(--papa); }
-    .item-card.mama-item .item-check { border-color: var(--mama); }
-
+    .item-card.wan-item .check-circle { border-color: var(--wan); }
+    .item-card.nyan-item .check-circle { border-color: var(--nyan); }
+    .item-card.checked .check-circle { background: #4CD964; border-color: #4CD964; color: white; }
     .item-body { flex: 1; min-width: 0; }
-    .item-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-      transition: all 0.2s;
-      word-break: break-all;
+    .item-name { font-size: 15px; font-weight: 600; color: var(--text); word-break: break-all; }
+    .item-card.checked .item-name { color: #BBBBBB; text-decoration: line-through; }
+    .item-meta { font-size: 11px; color: var(--text-light); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .item-card.checked .item-meta { opacity: 0.45; }
+    .who-badge {
+      font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 8px;
+      display: inline-flex; align-items: center; gap: 3px;
     }
-    .item-card.checked .item-name {
-      color: var(--checked-text);
-      text-decoration: line-through;
+    .who-badge.wan { background: var(--wan-light); color: var(--wan); }
+    .who-badge.nyan { background: var(--nyan-light); color: var(--nyan); }
+    .del-btn {
+      width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0;
+      background: #FFF0EE; border: none; color: #FF6B6B; font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
-    .item-meta {
-      font-size: 11px;
-      color: var(--text-light);
-      margin-top: 3px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .item-card.checked .item-meta { opacity: 0.5; }
+    .del-btn:active { background: #FFCCC8; }
 
-    .item-user-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .item-user-badge.papa { background: var(--papa-light); color: var(--papa); }
-    .item-user-badge.mama { background: var(--mama-light); color: var(--mama); }
-    .item-card.checked .item-user-badge { opacity: 0.5; }
-
-    .item-delete {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: #FFF0EE;
-      border: none;
-      color: #FF6B6B;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-    .item-delete:active { background: #FFCCC8; }
-
-    /* Empty State */
+    /* ── Empty ── */
     .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      color: var(--text-light);
-      gap: 12px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 50px 20px; gap: 10px; color: var(--text-light);
     }
-    .empty-icon { font-size: 64px; opacity: 0.6; }
-    .empty-title { font-size: 18px; font-weight: 700; color: var(--text); opacity: 0.5; }
-    .empty-sub { font-size: 13px; text-align: center; opacity: 0.6; line-height: 1.5; }
+    .empty-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; opacity: 0.5; }
+    .empty-title { font-size: 16px; font-weight: 700; color: var(--text); opacity: 0.4; }
+    .empty-sub { font-size: 13px; text-align: center; opacity: 0.55; line-height: 1.6; }
 
-    /* Bottom Bar */
+    /* ── Bottom Bar ── */
     .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid var(--border);
-      padding: 10px 20px;
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
-      z-index: 50;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card); border-top: 1px solid var(--border);
+      padding: 8px 20px; padding-bottom: max(8px, env(safe-area-inset-bottom));
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06); z-index: 50;
     }
-    .stat-group { display: flex; gap: 20px; }
-    .stat-item { text-align: center; }
-    .stat-value { font-size: 18px; font-weight: 800; }
-    .stat-value.papa-color { color: var(--papa); }
-    .stat-value.mama-color { color: var(--mama); }
-    .stat-value.total-color { color: var(--primary); }
-    .stat-label { font-size: 10px; color: var(--text-light); margin-top: 1px; }
+    .stats { display: flex; gap: 18px; }
+    .stat { text-align: center; }
+    .stat-val { font-size: 17px; font-weight: 800; }
+    .stat-val.c-all { color: var(--primary); }
+    .stat-val.c-wan { color: var(--wan); }
+    .stat-val.c-nyan { color: var(--nyan); }
+    .stat-val.c-done { color: #4CD964; }
+    .stat-lbl { font-size: 10px; color: var(--text-light); margin-top: 1px; }
+    .clear-btn {
+      background: #FFF0EE; border: 1.5px solid #FFD0CC;
+      border-radius: 12px; padding: 7px 12px;
+      font-size: 12px; font-weight: 600; color: #FF6B6B;
+      font-family: inherit; cursor: pointer;
+    }
+    .clear-btn:active { background: #FFCCC8; }
 
-    .clear-done-btn {
-      background: #FFF0EE;
-      border: 1.5px solid #FFD0CC;
-      border-radius: 12px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #FF6B6B;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .clear-done-btn:active { background: #FFCCC8; }
-
-    /* Category input */
-    .category-selector {
-      display: flex;
-      gap: 6px;
-      padding: 0 16px 10px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .category-selector::-webkit-scrollbar { display: none; }
-    .cat-chip {
-      flex-shrink: 0;
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: white;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-light);
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    .cat-chip.selected {
-      background: var(--primary-light);
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    .cat-chip:active { transform: scale(0.95); }
-
-    /* Note/quantity add */
-    .add-bar-extended {
-      padding: 0 16px 10px;
-      display: flex;
-      gap: 8px;
-    }
-    .add-input-small {
-      flex: 1;
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 12px;
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-    }
-    .add-input-small:focus { border-color: var(--primary); }
-    .add-input-small::placeholder { color: var(--text-light); opacity: 0.6; }
-
-    /* Toast */
+    /* ── Toast ── */
     .toast {
-      position: fixed;
-      bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(61,43,31,0.9);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0;
-      transition: all 0.3s;
-      pointer-events: none;
-      white-space: nowrap;
-      z-index: 500;
+      position: fixed; bottom: max(76px, calc(76px + env(safe-area-inset-bottom)));
+      left: 50%; transform: translateX(-50%) translateY(16px);
+      background: rgba(61,43,31,0.92); color: white;
+      padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; z-index: 500;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* Swipe hint */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
-<!-- Main App -->
 <div id="app">
+  <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <img src="dog.jpg.jpg" alt="わんにゃん" class="pet-circle" id="header-pet-img">
+      <img src="dogcat.jpg.png" alt="わんにゃん" class="header-img">
       <div>
         <div class="header-title">🛒 わんにゃんお買い物</div>
         <div class="header-subtitle">ふたりのお買い物メモ</div>
       </div>
     </div>
-    <span style="font-size:12px;font-weight:600;" id="sync-status">⟳ 接続中...</span>
+    <div class="sync-badge" id="sync-status">⟳ 接続中</div>
   </header>
 
-  <!-- Category chips -->
-  <div class="category-selector" id="category-chips">
-    <div class="cat-chip selected" onclick="selectCategory(this, '')">すべて</div>
-    <div class="cat-chip" onclick="selectCategory(this, '野菜・果物')">🥦 野菜・果物</div>
-    <div class="cat-chip" onclick="selectCategory(this, '肉・魚')">🥩 肉・魚</div>
-    <div class="cat-chip" onclick="selectCategory(this, '乳製品')">🧀 乳製品</div>
-    <div class="cat-chip" onclick="selectCategory(this, 'パン・お菓子')">🍞 パン・お菓子</div>
-    <div class="cat-chip" onclick="selectCategory(this, '飲み物')">🧃 飲み物</div>
-    <div class="cat-chip" onclick="selectCategory(this, '日用品')">🧴 日用品</div>
-    <div class="cat-chip" onclick="selectCategory(this, 'ペット用品')">🐾 ペット用品</div>
-    <div class="cat-chip" onclick="selectCategory(this, 'その他')">📦 その他</div>
-  </div>
-
-  <!-- Add item -->
-  <div class="add-bar">
-    <button class="user-toggle-btn" id="user-toggle-btn" onclick="toggleUser()"><img src="dog.jpg.jpg" alt="わん" id="user-toggle-img"></button>
-    <input type="text" class="add-input" id="item-input" placeholder="買い物を追加..." maxlength="40"
-           onkeydown="if(event.key==='Enter') addItem()">
-    <div class="add-input-small" style="max-width:76px">
-      <input type="text" id="qty-input" placeholder="数量" style="width:100%;border:none;outline:none;font-family:inherit;font-size:13px;color:var(--text);background:transparent;" maxlength="10">
+  <!-- Input Panel -->
+  <div class="input-panel">
+    <!-- わん / にゃん 切替 -->
+    <div class="user-toggle-row">
+      <button class="user-btn wan active" id="btn-wan" onclick="setUser('wan')">
+        <img src="dog.jpg.png" alt="わん" id="img-wan">
+        <span class="user-btn-label">🐶 わん</span>
+      </button>
+      <button class="user-btn nyan" id="btn-nyan" onclick="setUser('nyan')">
+        <img src="cat.jpg.png" alt="にゃん" id="img-nyan">
+        <span class="user-btn-label">🐱 にゃん</span>
+      </button>
     </div>
-    <button class="add-btn" onclick="addItem()">＋</button>
+    <!-- テキスト入力 -->
+    <div class="input-row">
+      <input type="text" class="text-input" id="item-input"
+        placeholder="🐶 わん：買い物を追加..." maxlength="40"
+        onkeydown="if(event.key==='Enter')addItem()">
+      <input type="text" class="qty-input" id="qty-input"
+        placeholder="数量" maxlength="8"
+        onkeydown="if(event.key==='Enter')addItem()">
+      <button class="add-btn" onclick="addItem()">＋</button>
+    </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" id="tab-all" onclick="switchTab('all')">
-      🛒 全部 <span class="tab-badge" id="badge-all">0</span>
+  <!-- Category Tabs -->
+  <div class="category-scroll" id="cat-tabs"></div>
+
+  <!-- Suggestion Chips -->
+  <div class="suggestion-area hidden" id="sugg-area">
+    <div class="suggestion-wrap" id="sugg-wrap"></div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" id="ftab-all" onclick="setFilter('all')">
+      全部 <span class="f-badge" id="fb-all">0</span>
     </button>
-    <button class="tab" id="tab-papa" onclick="switchTab('papa')">
-      🐶 わん <span class="tab-badge" id="badge-papa">0</span>
+    <button class="filter-tab" id="ftab-wan" onclick="setFilter('wan')">
+      🐶わん <span class="f-badge" id="fb-wan">0</span>
     </button>
-    <button class="tab" id="tab-mama" onclick="switchTab('mama')">
-      🐱 にゃん <span class="tab-badge" id="badge-mama">0</span>
+    <button class="filter-tab" id="ftab-nyan" onclick="setFilter('nyan')">
+      🐱にゃん <span class="f-badge" id="fb-nyan">0</span>
     </button>
   </div>
 
   <!-- List -->
-  <div class="list-container" id="list-container">
-    <!-- Rendered by JS -->
-  </div>
+  <div class="list-wrap" id="list-wrap"></div>
 
-  <!-- Bottom bar -->
+  <!-- Bottom Bar -->
   <div class="bottom-bar">
-    <div class="stat-group">
-      <div class="stat-item">
-        <div class="stat-value total-color" id="stat-total">0</div>
-        <div class="stat-label">合計</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value papa-color" id="stat-papa">0</div>
-        <div class="stat-label">🐶 わん</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value mama-color" id="stat-mama">0</div>
-        <div class="stat-label">🐱 にゃん</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" style="color:#4CD964" id="stat-done">0</div>
-        <div class="stat-label">✅ 完了</div>
-      </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val c-all" id="sv-all">0</div><div class="stat-lbl">合計</div></div>
+      <div class="stat"><div class="stat-val c-wan" id="sv-wan">0</div><div class="stat-lbl">🐶わん</div></div>
+      <div class="stat"><div class="stat-val c-nyan" id="sv-nyan">0</div><div class="stat-lbl">🐱にゃん</div></div>
+      <div class="stat"><div class="stat-val c-done" id="sv-done">0</div><div class="stat-lbl">✅完了</div></div>
     </div>
-    <button class="clear-done-btn" onclick="clearDone()">完了削除</button>
+    <button class="clear-btn" onclick="clearDone()">完了削除</button>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== STATE =====
-  let currentUser = null;
-  let currentTab = 'all';
-  let currentCategory = '';
-  let items = [];
-  const ROOM_ID = 'WANNYAN';
-  let lastServerUpdatedAt = 0;
-  let syncInterval = null;
-  let isSyncing = false;
+// ============================================================
+// ★ 候補商品データ（ここを編集して候補を追加・変更できます）
+// ============================================================
+const SUGGESTIONS = {
+  '日用品':     ['トイレットペーパー','ティッシュ','キッチンペーパー','食器用洗剤','洗濯洗剤','柔軟剤','お風呂洗剤','トイレ洗剤','ハンドソープ','シャンプー','コンディショナー','ボディソープ','歯みがき粉','歯ブラシ','ゴミ袋','ラップ','アルミホイル','ジップ袋','スポンジ','除菌シート'],
+  '野菜・果物': ['キャベツ','レタス','白菜','玉ねぎ','じゃがいも','にんじん','きゅうり','トマト','ミニトマト','ピーマン','もやし','きのこ','えのき','しめじ','長ねぎ','大葉','バナナ','りんご','みかん','いちご'],
+  '肉・魚':     ['牛肉','豚肉','鶏もも肉','鶏むね肉','ひき肉','ウインナー','ベーコン','ハム','卵','鮭','さば','刺身','アジ','しらす','ツナ缶'],
+  '乳製品':     ['牛乳','ヨーグルト','チーズ','バター','卵','生クリーム'],
+  'パン・お菓子':['食パン','ロールパン','菓子パン','ベーグル','クッキー','チョコ','せんべい','ポテトチップス','アイス'],
+  '飲み物':     ['水','お茶','炭酸水','コーヒー','カフェラテ','ジュース','豆乳','ビール'],
+  'ペット用品': ['ドッグフード','キャットフード','おやつ','猫砂','ペットシーツ','ウェットティッシュ','消臭袋'],
+  'その他':     ['豆腐','納豆','うどん','パスタ','米','味噌','醤油','マヨネーズ','ケチャップ','カレールー'],
+};
 
-  const STORAGE_KEY = 'wannyan_shopping_v2';
-  const USER_KEY = 'wannyan_user_v1';
+// カテゴリの表示順
+const CATEGORY_ORDER = ['日用品','野菜・果物','肉・魚','乳製品','パン・お菓子','飲み物','ペット用品','その他'];
 
-  // ===== INIT =====
-  function init() {
-    loadLocal();
-    currentUser = localStorage.getItem(USER_KEY) || 'papa';
-    localStorage.setItem(USER_KEY, currentUser);
-    showApp();
+const CATEGORY_EMOJI = {
+  '日用品':'🧴','野菜・果物':'🥦','肉・魚':'🥩','乳製品':'🧀',
+  'パン・お菓子':'🍞','飲み物':'🧃','ペット用品':'🐾','その他':'📦',
+};
+
+// ============================================================
+// State
+// ============================================================
+const STORAGE_KEY  = 'wannyan_shopping_v2';
+const USER_KEY     = 'wannyan_user_v1';
+const CUSTOM_SUGG_KEY = 'wannyan_custom_sugg_v1';
+const ROOM_ID      = 'WANNYAN';
+
+let items          = [];
+let currentUser    = 'wan';
+let currentCat     = '';   // '' = すべて
+let currentFilter  = 'all';
+let lastServerAt   = 0;
+let syncInterval   = null;
+let isSyncing      = false;
+
+// ============================================================
+// Init
+// ============================================================
+function init() {
+  loadLocal();
+  currentUser = localStorage.getItem(USER_KEY) || 'wan';
+  buildCatTabs();
+  updateUserUI();
+  renderList();
+  startSync();
+}
+
+// ============================================================
+// LocalStorage
+// ============================================================
+function loadLocal() {
+  try { items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { items = []; }
+}
+function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+
+// Custom suggestions
+function loadCustomSugg() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_SUGG_KEY)) || {}; } catch { return {}; }
+}
+function saveCustomSugg(data) { localStorage.setItem(CUSTOM_SUGG_KEY, JSON.stringify(data)); }
+
+function getSuggestions(cat) {
+  const base = SUGGESTIONS[cat] || [];
+  const custom = loadCustomSugg()[cat] || [];
+  return { base, custom };
+}
+
+// ============================================================
+// User toggle
+// ============================================================
+function setUser(u) {
+  currentUser = u;
+  localStorage.setItem(USER_KEY, u);
+  updateUserUI();
+}
+
+function updateUserUI() {
+  document.getElementById('btn-wan').className  = 'user-btn wan'  + (currentUser === 'wan'  ? ' active' : '');
+  document.getElementById('btn-nyan').className = 'user-btn nyan' + (currentUser === 'nyan' ? ' active' : '');
+  document.getElementById('item-input').placeholder =
+    (currentUser === 'wan' ? '🐶 わん：' : '🐱 にゃん：') + '買い物を追加...';
+}
+
+// ============================================================
+// Category tabs
+// ============================================================
+function buildCatTabs() {
+  const wrap = document.getElementById('cat-tabs');
+  let html = `<button class="cat-tab active" onclick="selectCat(this,'')">🛒 すべて</button>`;
+  CATEGORY_ORDER.forEach(c => {
+    html += `<button class="cat-tab" onclick="selectCat(this,'${c}')">${CATEGORY_EMOJI[c]||''} ${c}</button>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function selectCat(el, cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderSuggestions();
+}
+
+// ============================================================
+// Suggestion chips
+// ============================================================
+function renderSuggestions() {
+  const area = document.getElementById('sugg-area');
+  const wrap = document.getElementById('sugg-wrap');
+  if (!currentCat) { area.classList.add('hidden'); return; }
+  area.classList.remove('hidden');
+  const { base, custom } = getSuggestions(currentCat);
+  let html = base.map(s =>
+    `<button class="sugg-chip" onclick="addFromSugg('${esc(s)}')">${s}</button>`
+  ).join('');
+  if (custom.length) {
+    html += custom.map(s =>
+      `<button class="sugg-chip custom" onclick="addFromSugg('${esc(s)}')">${s}</button>`
+    ).join('');
+  }
+  wrap.innerHTML = html || '<span style="font-size:13px;color:var(--text-light)">候補なし</span>';
+}
+
+function addFromSugg(name) {
+  quickAdd(name, '');
+  showToast((currentUser === 'wan' ? '🐶' : '🐱') + ' 「' + name + '」を追加しました');
+}
+
+// ============================================================
+// Add item
+// ============================================================
+function addItem() {
+  const inp = document.getElementById('item-input');
+  const qty = document.getElementById('qty-input');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  quickAdd(name, qty.value.trim());
+  showToast((currentUser === 'wan' ? '🐶 わん' : '🐱 にゃん') + ' が「' + name + '」を追加');
+  inp.value = ''; qty.value = '';
+  inp.focus();
+}
+
+function quickAdd(name, qty) {
+  items.unshift({
+    id: Date.now() + Math.random(), name, qty,
+    category: currentCat || '',
+    user: currentUser, checked: false,
+    createdAt: new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' })
+  });
+  saveLocal(); pushServer(); renderList();
+}
+
+// ============================================================
+// Filter tabs
+// ============================================================
+function setFilter(f) {
+  currentFilter = f;
+  ['all','wan','nyan'].forEach(k => {
+    document.getElementById('ftab-' + k).className =
+      'filter-tab' + (k === f ? ' active' : '');
+  });
+  renderList();
+}
+
+// ============================================================
+// Toggle check / delete
+// ============================================================
+function toggleCheck(id) {
+  const it = items.find(i => i.id === id); if (!it) return;
+  it.checked = !it.checked;
+  if (it.checked) it.checkedAt = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+  saveLocal(); pushServer(); renderList();
+}
+function deleteItem(id, e) {
+  e.stopPropagation();
+  items = items.filter(i => i.id !== id);
+  saveLocal(); pushServer(); renderList();
+  showToast('削除しました');
+}
+function clearDone() {
+  const n = items.filter(i => i.checked).length;
+  if (!n) { showToast('完了済みはありません'); return; }
+  if (!confirm(n + '件の完了済みを削除しますか？')) return;
+  items = items.filter(i => !i.checked);
+  saveLocal(); pushServer(); renderList();
+  showToast('✅ ' + n + '件削除しました');
+}
+
+// ============================================================
+// Render list
+// ============================================================
+function renderList() {
+  const wrap = document.getElementById('list-wrap');
+  let filtered = items.slice();
+  if (currentFilter === 'wan')  filtered = filtered.filter(i => i.user === 'wan');
+  if (currentFilter === 'nyan') filtered = filtered.filter(i => i.user === 'nyan');
+
+  const unchecked = filtered.filter(i => !i.checked);
+  const checked   = filtered.filter(i => i.checked);
+
+  // Stats
+  const unc = items.filter(i => !i.checked);
+  document.getElementById('sv-all').textContent  = unc.length;
+  document.getElementById('sv-wan').textContent  = unc.filter(i => i.user === 'wan').length;
+  document.getElementById('sv-nyan').textContent = unc.filter(i => i.user === 'nyan').length;
+  document.getElementById('sv-done').textContent = items.filter(i => i.checked).length;
+  document.getElementById('fb-all').textContent  = unc.length;
+  document.getElementById('fb-wan').textContent  = unc.filter(i => i.user === 'wan').length;
+  document.getElementById('fb-nyan').textContent = unc.filter(i => i.user === 'nyan').length;
+
+  if (!unchecked.length && !checked.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <img src="${currentUser==='wan'?'dog.jpg.png':'cat.jpg.png'}" class="empty-img" alt="">
+      <div class="empty-title">リストは空です</div>
+      <div class="empty-sub">上の入力か候補から<br>追加してみよう！</div>
+    </div>`; return;
   }
 
-  function loadLocal() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      items = raw ? JSON.parse(raw) : [];
-    } catch(e) { items = []; }
+  let html = '';
+  if (unchecked.length) {
+    html += `<div class="list-section-title">📋 未購入 (${unchecked.length}件)</div>`;
+    unchecked.forEach(it => { html += itemHTML(it); });
   }
-
-  function saveLocal() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  if (checked.length) {
+    html += `<div class="list-section-title" style="margin-top:14px">✅ 購入済み (${checked.length}件)</div>`;
+    checked.forEach(it => { html += itemHTML(it); });
   }
+  wrap.innerHTML = html;
+}
 
-  // ===== SYNC =====
-  async function pushToServer() {
-    if (!roomId) return;
-    const updatedAt = Date.now();
-    try {
-      setSyncStatus('syncing');
-      const res = await fetch(`/api/shopping?room=${ROOM_ID}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, updatedAt })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        lastServerUpdatedAt = data.updatedAt || updatedAt;
-        setSyncStatus('ok');
-      } else {
-        setSyncStatus('error');
-      }
-    } catch(e) {
-      setSyncStatus('offline');
-    }
-  }
+function itemHTML(it) {
+  const wan = it.user === 'wan';
+  const qty = it.qty ? `<b style="margin-left:4px">${esc(it.qty)}</b>` : '';
+  const cat = it.category ? `<span style="opacity:.6">${it.category}</span>` : '';
+  return `<div class="item-card ${it.checked?'checked':''} ${wan?'wan':'nyan'}-item" onclick="toggleCheck(${it.id})">
+    <div class="check-circle">${it.checked?'✓':''}</div>
+    <div class="item-body">
+      <div class="item-name">${esc(it.name)}${qty}</div>
+      <div class="item-meta">
+        <span class="who-badge ${wan?'wan':'nyan'}">${wan?'🐶 わん':'🐱 にゃん'}</span>
+        <span>${it.createdAt}</span>${cat}
+      </div>
+    </div>
+    <button class="del-btn" onclick="deleteItem(${it.id},event)">✕</button>
+  </div>`;
+}
 
-  async function pullFromServer() {
-    if (!roomId || isSyncing) return;
-    isSyncing = true;
-    try {
-      const res = await fetch(`/api/shopping?room=${ROOM_ID}`);
-      if (!res.ok) { setSyncStatus('error'); return; }
-      const data = await res.json();
-      // Only update if server has newer data than what we last synced
-      if (data.updatedAt && data.updatedAt > lastServerUpdatedAt) {
-        items = data.items || [];
-        lastServerUpdatedAt = data.updatedAt;
-        saveLocal();
-        renderList();
-        setSyncStatus('ok');
-      } else {
-        setSyncStatus('ok');
-      }
-    } catch(e) {
-      setSyncStatus('offline');
-    } finally {
-      isSyncing = false;
-    }
-  }
+// ============================================================
+// Sync
+// ============================================================
+async function pushServer() {
+  try {
+    setSyncStatus('syncing');
+    const res = await fetch(`/api/shopping?room=${ROOM_ID}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ items, updatedAt: Date.now() })
+    });
+    setSyncStatus(res.ok ? 'ok' : 'error');
+    if (res.ok) { const d = await res.json(); lastServerAt = d.updatedAt||0; }
+  } catch { setSyncStatus('offline'); }
+}
 
-  function startSync() {
-    pullFromServer(); // immediate first pull
-    if (syncInterval) clearInterval(syncInterval);
-    syncInterval = setInterval(pullFromServer, 5000); // poll every 5s
-  }
+async function pullServer() {
+  if (isSyncing) return; isSyncing = true;
+  try {
+    const res = await fetch(`/api/shopping?room=${ROOM_ID}`);
+    if (!res.ok) { setSyncStatus('error'); return; }
+    const d = await res.json();
+    if (d.updatedAt && d.updatedAt > lastServerAt) {
+      items = d.items || []; lastServerAt = d.updatedAt;
+      saveLocal(); renderList(); setSyncStatus('ok');
+    } else { setSyncStatus('ok'); }
+  } catch { setSyncStatus('offline'); }
+  finally { isSyncing = false; }
+}
 
-  function setSyncStatus(status) {
-    const el = document.getElementById('sync-status');
-    if (!el) return;
-    const map = {
-      syncing: { text: '⟳ 同期中...', color: '#FFB347' },
-      ok:      { text: '✓ 同期済み',  color: '#4CD964' },
-      offline: { text: '✕ オフライン', color: '#FF6B6B' },
-      error:   { text: '! エラー',    color: '#FF6B6B' }
-    };
-    const s = map[status] || map.ok;
-    el.textContent = s.text;
-    el.style.color = s.color;
-  }
+function startSync() { pullServer(); syncInterval = setInterval(pullServer, 5000); }
 
-  // ===== USER =====
-  function showApp() {
-    updateUserUI();
-    renderList();
-    startSync();
-  }
+function setSyncStatus(s) {
+  const el = document.getElementById('sync-status');
+  const map = { syncing:'⟳ 同期中', ok:'✓ 同期済み', offline:'✕ オフライン', error:'! エラー' };
+  el.textContent = map[s] || '✓';
+}
 
-  function toggleUser() {
-    currentUser = currentUser === 'papa' ? 'mama' : 'papa';
-    localStorage.setItem(USER_KEY, currentUser);
-    updateUserUI();
-    showToast(currentUser === 'papa' ? '🐶 わんに切替えました' : '🐱 にゃんに切替えました');
-  }
+// ============================================================
+// Utils
+// ============================================================
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  function updateUserUI() {
-    const isPapa = currentUser === 'papa';
-    const btn = document.getElementById('user-toggle-btn');
-    btn.className = 'user-toggle-btn' + (isPapa ? '' : ' mama');
-    document.getElementById('user-toggle-img').src = isPapa ? 'dog.jpg.jpg' : 'cat.jpg.jpg';
-    document.getElementById('header-pet-img').src = isPapa ? 'dog.jpg.jpg' : 'cat.jpg.jpg';
-    const input = document.getElementById('item-input');
-    input.placeholder = (isPapa ? '🐶 わん：' : '🐱 にゃん：') + '買い物を追加...';
-  }
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
 
-  // ===== CATEGORIES =====
-  function selectCategory(el, cat) {
-    currentCategory = cat;
-    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    renderList();
-  }
-
-  // ===== TABS =====
-  function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    renderList();
-  }
-
-  // ===== ADD ITEM =====
-  function addItem() {
-    const input = document.getElementById('item-input');
-    const qtyInput = document.getElementById('qty-input');
-    const name = input.value.trim();
-    if (!name) { input.focus(); return; }
-    const qty = qtyInput.value.trim();
-    const item = {
-      id: Date.now() + Math.random(),
-      name, qty,
-      category: currentCategory || '',
-      user: currentUser,
-      checked: false,
-      createdAt: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
-    };
-    items.unshift(item);
-    saveLocal();
-    pushToServer();
-    input.value = '';
-    qtyInput.value = '';
-    renderList();
-    showToast((currentUser === 'papa' ? '🐶 わん' : '🐱 にゃん') + ' が「' + name + '」を追加しました');
-    input.focus();
-  }
-
-  // ===== TOGGLE CHECK =====
-  function toggleCheck(id) {
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-    item.checked = !item.checked;
-    if (item.checked) item.checkedAt = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-    saveLocal();
-    pushToServer();
-    renderList();
-  }
-
-  // ===== DELETE =====
-  function deleteItem(id, event) {
-    event.stopPropagation();
-    items = items.filter(i => i.id !== id);
-    saveLocal();
-    pushToServer();
-    renderList();
-    showToast('削除しました');
-  }
-
-  // ===== CLEAR DONE =====
-  function clearDone() {
-    const count = items.filter(i => i.checked).length;
-    if (count === 0) { showToast('完了済みのアイテムはありません'); return; }
-    if (!confirm(count + '件の完了済みアイテムを削除しますか？')) return;
-    items = items.filter(i => !i.checked);
-    saveLocal();
-    pushToServer();
-    renderList();
-    showToast('✅ ' + count + '件削除しました');
-  }
-
-  // ===== RENDER =====
-  function renderList() {
-    const container = document.getElementById('list-container');
-    let filtered = items.slice();
-    if (currentTab === 'papa') filtered = filtered.filter(i => i.user === 'papa');
-    if (currentTab === 'mama') filtered = filtered.filter(i => i.user === 'mama');
-    if (currentCategory) filtered = filtered.filter(i => i.category === currentCategory);
-
-    const unchecked = filtered.filter(i => !i.checked);
-    const checked = filtered.filter(i => i.checked);
-
-    const allUnchecked = items.filter(i => !i.checked);
-    document.getElementById('stat-total').textContent = allUnchecked.length;
-    document.getElementById('stat-papa').textContent = allUnchecked.filter(i => i.user === 'papa').length;
-    document.getElementById('stat-mama').textContent = allUnchecked.filter(i => i.user === 'mama').length;
-    document.getElementById('stat-done').textContent = items.filter(i => i.checked).length;
-    document.getElementById('badge-all').textContent = items.filter(i => !i.checked).length;
-    document.getElementById('badge-papa').textContent = items.filter(i => i.user === 'papa' && !i.checked).length;
-    document.getElementById('badge-mama').textContent = items.filter(i => i.user === 'mama' && !i.checked).length;
-
-    if (unchecked.length === 0 && checked.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">${currentUser === 'papa' ? '🐶' : '🐱'}</div>
-          <div class="empty-title">買い物リストは空です</div>
-          <div class="empty-sub">上の入力欄から<br>買い物を追加してみよう！</div>
-        </div>`;
-      return;
-    }
-
-    let html = '';
-    if (unchecked.length > 0) {
-      html += `<div class="list-section-header">📋 未購入 (${unchecked.length}件)</div>`;
-      unchecked.forEach(item => { html += renderItem(item); });
-    }
-    if (checked.length > 0) {
-      html += `<div class="list-section-header" style="margin-top:16px">✅ 購入済み (${checked.length}件)</div>`;
-      checked.forEach(item => { html += renderItem(item); });
-    }
-    container.innerHTML = html;
-  }
-
-  function renderItem(item) {
-    const isPapa = item.user === 'papa';
-    const icon = isPapa ? '🐶' : '🐱';
-    const userName = isPapa ? 'わん' : 'にゃん';
-    const userClass = isPapa ? 'papa' : 'mama';
-    const checkedClass = item.checked ? 'checked' : '';
-    const itemUserClass = isPapa ? 'papa-item' : 'mama-item';
-    const checkContent = item.checked ? '✓' : '';
-    const catLabel = item.category ? `<span style="margin-left:4px;opacity:0.6">${item.category}</span>` : '';
-    const qtyLabel = item.qty ? `<span style="margin-left:4px;font-weight:700">${item.qty}</span>` : '';
-
-    return `
-      <div class="item-card ${checkedClass} ${itemUserClass}" onclick="toggleCheck(${item.id})">
-        <div class="item-check">${checkContent}</div>
-        <div class="item-body">
-          <div class="item-name">${escapeHtml(item.name)}${qtyLabel}</div>
-          <div class="item-meta">
-            <span class="item-user-badge ${userClass}">${icon} ${userName}</span>
-            <span>${item.createdAt}</span>
-            ${catLabel}
-          </div>
-        </div>
-        <button class="item-delete" onclick="deleteItem(${item.id}, event)">✕</button>
-      </div>`;
-  }
-
-  function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ===== TOAST =====
-  let toastTimeout;
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
-  }
-
-  // ===== SERVICE WORKER =====
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
-
-  // ===== START =====
-  init();
+// ============================================================
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+init();
 </script>
 </body>
 </html>
