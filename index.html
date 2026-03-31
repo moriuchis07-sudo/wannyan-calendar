@@ -421,15 +421,7 @@
         <div class="header-subtitle">ふたりのお買い物メモ</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
-      <span style="font-size:11px;font-weight:600;" id="sync-status">⟳ 接続中...</span>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:rgba(255,255,255,0.8);">🔗</span>
-        <span style="font-size:13px;font-weight:800;color:white;letter-spacing:1.5px;" id="room-code-display">------</span>
-        <button onclick="copyRoomCode()" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:white;cursor:pointer;font-family:inherit;">コピー</button>
-        <button onclick="showRoomModal()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);cursor:pointer;font-family:inherit;">変更</button>
-      </div>
-    </div>
+    <span style="font-size:12px;font-weight:600;" id="sync-status">⟳ 接続中...</span>
   </header>
 
   <!-- Category chips -->
@@ -498,29 +490,6 @@
   </div>
 </div>
 
-<!-- Room Modal -->
-<div class="modal-overlay" id="room-modal" onclick="if(event.target===this)closeRoomModal()">
-  <div class="modal" style="padding:28px 20px;">
-    <div class="modal-handle"></div>
-    <div class="modal-date">🔗 ルームコード設定</div>
-    <p style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:20px;line-height:1.6;">
-      パートナーと同じルームコードを入力すると<br>リストがリアルタイムで同期されます！
-    </p>
-    <div style="background:var(--bg);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;">
-      <div style="font-size:11px;color:var(--text-light);margin-bottom:6px;">現在のルームコード</div>
-      <div style="font-size:28px;font-weight:800;color:var(--primary);letter-spacing:4px;" id="room-modal-current"></div>
-    </div>
-    <div style="font-size:13px;font-weight:600;color:var(--text-light);margin-bottom:8px;">パートナーのコードを入力</div>
-    <input type="text" id="room-input" placeholder="例: ABC123"
-      style="width:100%;background:white;border:2px solid var(--border);border-radius:14px;padding:14px;font-size:18px;font-weight:700;letter-spacing:3px;text-align:center;text-transform:uppercase;font-family:inherit;color:var(--text);outline:none;margin-bottom:14px;"
-      maxlength="8" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeRoomModal()">キャンセル</button>
-      <button class="btn-save" onclick="applyRoomCode()">🔗 接続する</button>
-    </div>
-  </div>
-</div>
-
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -530,27 +499,20 @@
   let currentTab = 'all';
   let currentCategory = '';
   let items = [];
-  let roomId = null;
+  const ROOM_ID = 'WANNYAN';
   let lastServerUpdatedAt = 0;
   let syncInterval = null;
   let isSyncing = false;
 
   const STORAGE_KEY = 'wannyan_shopping_v2';
   const USER_KEY = 'wannyan_user_v1';
-  const ROOM_KEY = 'wannyan_room_v1';
 
   // ===== INIT =====
   function init() {
     loadLocal();
-    roomId = localStorage.getItem(ROOM_KEY) || generateRoomId();
-    localStorage.setItem(ROOM_KEY, roomId);
     currentUser = localStorage.getItem(USER_KEY) || 'papa';
     localStorage.setItem(USER_KEY, currentUser);
     showApp();
-  }
-
-  function generateRoomId() {
-    return Math.random().toString(36).slice(2, 8).toUpperCase();
   }
 
   function loadLocal() {
@@ -570,7 +532,7 @@
     const updatedAt = Date.now();
     try {
       setSyncStatus('syncing');
-      const res = await fetch(`/api/shopping?room=${roomId}`, {
+      const res = await fetch(`/api/shopping?room=${ROOM_ID}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items, updatedAt })
@@ -591,7 +553,7 @@
     if (!roomId || isSyncing) return;
     isSyncing = true;
     try {
-      const res = await fetch(`/api/shopping?room=${roomId}`);
+      const res = await fetch(`/api/shopping?room=${ROOM_ID}`);
       if (!res.ok) { setSyncStatus('error'); return; }
       const data = await res.json();
       // Only update if server has newer data than what we last synced
@@ -634,7 +596,6 @@
   // ===== USER =====
   function showApp() {
     updateUserUI();
-    updateRoomUI();
     renderList();
     startSync();
   }
@@ -653,44 +614,6 @@
     btn.className = 'user-toggle-btn' + (isPapa ? '' : ' mama');
     const input = document.getElementById('item-input');
     input.placeholder = (isPapa ? '🐶 わん：' : '🐱 にゃん：') + '買い物を追加...';
-  }
-
-  // ===== ROOM UI =====
-  function updateRoomUI() {
-    const el = document.getElementById('room-code-display');
-    if (el) el.textContent = roomId;
-  }
-
-  function showRoomModal() {
-    document.getElementById('room-modal').classList.add('open');
-    document.getElementById('room-input').value = '';
-    document.getElementById('room-modal-current').textContent = roomId;
-  }
-
-  function closeRoomModal() {
-    document.getElementById('room-modal').classList.remove('open');
-  }
-
-  function applyRoomCode() {
-    const code = document.getElementById('room-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
-    if (!code || code.length < 4) { showToast('ルームコードを4文字以上入力してください'); return; }
-    roomId = code;
-    localStorage.setItem(ROOM_KEY, roomId);
-    lastServerUpdatedAt = 0; // force re-pull
-    items = [];
-    saveLocal();
-    updateRoomUI();
-    closeRoomModal();
-    startSync();
-    showToast('🔗 ルームコード「' + roomId + '」に接続しました');
-  }
-
-  function copyRoomCode() {
-    navigator.clipboard.writeText(roomId).then(() => {
-      showToast('📋 ルームコード「' + roomId + '」をコピーしました！');
-    }).catch(() => {
-      showToast('ルームコード: ' + roomId);
-    });
   }
 
   // ===== CATEGORIES =====
