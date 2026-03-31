@@ -9,10 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "pets.jpg",
+      "src": "cat.jpg.jpg",
       "sizes": "any",
       "type": "image/jpeg",
       "purpose": "any maskable"
+    },
+    {
+      "src": "dog.jpg.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ]
 }

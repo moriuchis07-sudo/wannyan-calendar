@@ -69,21 +69,21 @@
     .user-toggle-btn {
       width: 46px;
       height: 46px;
-      border-radius: 14px;
-      border: 2.5px solid var(--papa);
+      border-radius: 50%;
+      border: 3px solid var(--papa);
       background: var(--papa-light);
-      font-size: 22px;
+      padding: 0;
+      overflow: hidden;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       transition: all 0.18s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    .user-toggle-btn.mama {
-      border-color: var(--mama);
-      background: var(--mama-light);
-    }
+    .user-toggle-btn.mama { border-color: var(--mama); }
+    .user-toggle-btn img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
     .user-toggle-btn:active { transform: scale(0.88); }
 
     /* Tabs */
@@ -415,7 +415,7 @@
 <div id="app">
   <header class="header">
     <div class="header-left">
-      <img src="pets.jpg" alt="わんにゃん" class="pet-circle">
+      <img src="dog.jpg.jpg" alt="わんにゃん" class="pet-circle" id="header-pet-img">
       <div>
         <div class="header-title">🛒 わんにゃんお買い物</div>
         <div class="header-subtitle">ふたりのお買い物メモ</div>
@@ -439,7 +439,7 @@
 
   <!-- Add item -->
   <div class="add-bar">
-    <button class="user-toggle-btn" id="user-toggle-btn" onclick="toggleUser()">🐶</button>
+    <button class="user-toggle-btn" id="user-toggle-btn" onclick="toggleUser()"><img src="dog.jpg.jpg" alt="わん" id="user-toggle-img"></button>
     <input type="text" class="add-input" id="item-input" placeholder="買い物を追加..." maxlength="40"
            onkeydown="if(event.key==='Enter') addItem()">
     <div class="add-input-small" style="max-width:76px">
@@ -610,8 +610,9 @@
   function updateUserUI() {
     const isPapa = currentUser === 'papa';
     const btn = document.getElementById('user-toggle-btn');
-    btn.textContent = isPapa ? '🐶' : '🐱';
     btn.className = 'user-toggle-btn' + (isPapa ? '' : ' mama');
+    document.getElementById('user-toggle-img').src = isPapa ? 'dog.jpg.jpg' : 'cat.jpg.jpg';
+    document.getElementById('header-pet-img').src = isPapa ? 'dog.jpg.jpg' : 'cat.jpg.jpg';
     const input = document.getElementById('item-input');
     input.placeholder = (isPapa ? '🐶 わん：' : '🐱 にゃん：') + '買い物を追加...';
   }

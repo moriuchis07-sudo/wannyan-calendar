@@ -1,5 +1,5 @@
-const CACHE_NAME = 'wannyan-shopping-v2';
-const CACHE_FILES = ['./', './index.html', './manifest.json', './pets.jpg'];
+const CACHE_NAME = 'wannyan-shopping-v3';
+const CACHE_FILES = ['./', './index.html', './manifest.json', './dog.jpg.jpg', './cat.jpg.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
