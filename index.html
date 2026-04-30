@@ -313,6 +313,9 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script>
 // ============================================================
 // ★ 候補商品データ（ここを編集して候補を追加・変更できます）
@@ -348,9 +351,7 @@ let items          = [];
 let currentUser    = 'wan';
 let currentCat     = '';   // '' = すべて
 let currentFilter  = 'all';
-let lastServerAt   = 0;
-let syncInterval   = null;
-let isSyncing      = false;
+let shoppingRef    = null;
 
 // ============================================================
 // Init
@@ -368,7 +369,10 @@ function init() {
 // LocalStorage
 // ============================================================
 function loadLocal() {
-  try { items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { items = []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    items = raw.map(i => ({ ...i, id: String(i.id) }));
+  } catch { items = []; }
 }
 function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
 
@@ -459,13 +463,25 @@ function addItem() {
 }
 
 function quickAdd(name, qty) {
-  items.unshift({
-    id: Date.now() + Math.random(), name, qty,
+  let fbKey;
+  if (shoppingRef) {
+    fbKey = shoppingRef.push().key;
+  } else {
+    fbKey = 'i' + Date.now() + Math.floor(Math.random() * 1000);
+  }
+  const item = {
+    fbKey, id: fbKey, name, qty,
     category: currentCat || '',
     user: currentUser, checked: false,
+    createdTimestamp: Date.now(),
     createdAt: new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' })
-  });
-  saveLocal(); pushServer(); renderList();
+  };
+  items.unshift(item);
+  saveLocal(); renderList();
+  if (shoppingRef) {
+    setSyncStatus('syncing');
+    shoppingRef.child(fbKey).set(item).then(() => setSyncStatus('ok')).catch(() => setSyncStatus('error'));
+  }
 }
 
 // ============================================================
@@ -487,20 +503,29 @@ function toggleCheck(id) {
   const it = items.find(i => i.id === id); if (!it) return;
   it.checked = !it.checked;
   if (it.checked) it.checkedAt = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
-  saveLocal(); pushServer(); renderList();
+  saveLocal(); renderList();
+  if (shoppingRef && it.fbKey) shoppingRef.child(it.fbKey).update(it);
 }
 function deleteItem(id, e) {
   e.stopPropagation();
+  const it = items.find(i => i.id === id);
+  if (it && shoppingRef && it.fbKey) shoppingRef.child(it.fbKey).remove();
   items = items.filter(i => i.id !== id);
-  saveLocal(); pushServer(); renderList();
+  saveLocal(); renderList();
   showToast('削除しました');
 }
 function clearDone() {
-  const n = items.filter(i => i.checked).length;
+  const done = items.filter(i => i.checked);
+  const n = done.length;
   if (!n) { showToast('完了済みはありません'); return; }
   if (!confirm(n + '件の完了済みを削除しますか？')) return;
+  if (shoppingRef) {
+    const updates = {};
+    done.forEach(i => { if (i.fbKey) updates[i.fbKey] = null; });
+    shoppingRef.update(updates);
+  }
   items = items.filter(i => !i.checked);
-  saveLocal(); pushServer(); renderList();
+  saveLocal(); renderList();
   showToast('✅ ' + n + '件削除しました');
 }
 
@@ -550,7 +575,8 @@ function itemHTML(it) {
   const wan = it.user === 'wan';
   const qty = it.qty ? `<b style="margin-left:4px">${esc(it.qty)}</b>` : '';
   const cat = it.category ? `<span style="opacity:.6">${it.category}</span>` : '';
-  return `<div class="item-card ${it.checked?'checked':''} ${wan?'wan':'nyan'}-item" onclick="toggleCheck(${it.id})">
+  const eid = esc(String(it.id));
+  return `<div class="item-card ${it.checked?'checked':''} ${wan?'wan':'nyan'}-item" onclick="toggleCheck('${eid}')">
     <div class="check-circle">${it.checked?'✓':''}</div>
     <div class="item-body">
       <div class="item-name">${esc(it.name)}${qty}</div>
@@ -559,43 +585,73 @@ function itemHTML(it) {
         <span>${it.createdAt}</span>${cat}
       </div>
     </div>
-    <button class="del-btn" onclick="deleteItem(${it.id},event)">✕</button>
+    <button class="del-btn" onclick="deleteItem('${eid}',event)">✕</button>
   </div>`;
 }
 
 // ============================================================
-// Sync
+// Sync (Firebase Realtime Database)
 // ============================================================
-async function pushServer() {
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAi7KxYhQEoxqQf7E8r-1kXWU6WcvQow6I",
+  authDomain: "wannyanmanma.firebaseapp.com",
+  databaseURL: "https://wannyanmanma-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "wannyanmanma",
+  storageBucket: "wannyanmanma.firebasestorage.app",
+  messagingSenderId: "671037449294",
+  appId: "1:671037449294:web:327ca939dcc1af1eb84f1f"
+};
+
+function itemFbKey(item) {
+  return item.fbKey || ('i' + String(Math.floor(Number(item.id) || 0)).slice(-13));
+}
+
+function connectFirebase() {
+  const db = firebase.database();
+  shoppingRef = db.ref('shopping/WANNYAN');
+  shoppingRef.on('value', snap => {
+    const data = snap.val();
+    if (data === null) {
+      if (items.length > 0) {
+        const batch = {};
+        items.forEach(item => {
+          const k = itemFbKey(item);
+          item.fbKey = k; item.id = k;
+          batch[k] = item;
+        });
+        shoppingRef.set(batch).catch(() => {});
+      }
+    } else {
+      const incoming = Object.values(data).sort((a, b) => {
+        const ta = a.createdTimestamp || Math.floor(Number(a.id) || 0);
+        const tb = b.createdTimestamp || Math.floor(Number(b.id) || 0);
+        return tb - ta;
+      });
+      items = incoming;
+      saveLocal(); renderList();
+    }
+    setSyncStatus('ok');
+  }, () => { setSyncStatus('offline'); loadLocal(); renderList(); });
+}
+
+function startSync() {
+  if (!window.firebase) { setSyncStatus('offline'); return; }
   try {
-    setSyncStatus('syncing');
-    const res = await fetch(`/api/shopping?room=${ROOM_ID}`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ items, updatedAt: Date.now() })
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        connectFirebase();
+      } else {
+        // Auth state not yet set – will retry when user logs in via calendar
+        setSyncStatus('offline');
+      }
     });
-    setSyncStatus(res.ok ? 'ok' : 'error');
-    if (res.ok) { const d = await res.json(); lastServerAt = d.updatedAt||0; }
-  } catch { setSyncStatus('offline'); }
+  } catch(e) { setSyncStatus('offline'); }
 }
-
-async function pullServer() {
-  if (isSyncing) return; isSyncing = true;
-  try {
-    const res = await fetch(`/api/shopping?room=${ROOM_ID}`);
-    if (!res.ok) { setSyncStatus('error'); return; }
-    const d = await res.json();
-    if (d.updatedAt && d.updatedAt > lastServerAt) {
-      items = d.items || []; lastServerAt = d.updatedAt;
-      saveLocal(); renderList(); setSyncStatus('ok');
-    } else { setSyncStatus('ok'); }
-  } catch { setSyncStatus('offline'); }
-  finally { isSyncing = false; }
-}
-
-function startSync() { pullServer(); syncInterval = setInterval(pullServer, 5000); }
 
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
+  if (!el) return;
   const map = { syncing:'⟳ 同期中', ok:'✓ 同期済み', offline:'✕ オフライン', error:'! エラー' };
   el.textContent = map[s] || '✓';
 }
