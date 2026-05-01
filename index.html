@@ -41,9 +41,12 @@
     .header-title { font-size: 16px; font-weight: 800; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.15); }
     .header-subtitle { font-size: 10px; color: rgba(255,255,255,0.85); margin-top: 1px; }
     .sync-badge {
-      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);
-      background: rgba(255,255,255,0.18); border-radius: 10px; padding: 4px 10px;
+      font-size: 20px; color: white;
+      background: rgba(255,255,255,0.22); border: none; border-radius: 50%;
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.4s;
     }
+    .sync-badge.spinning { transform: rotate(360deg); }
 
     /* ── Input Panel ── */
     .input-panel {
@@ -244,7 +247,7 @@
         <div class="header-subtitle">ふたりのお買い物メモ</div>
       </div>
     </div>
-    <div class="sync-badge" id="sync-status">⟳ 接続中</div>
+    <button class="sync-badge" id="sync-status" onclick="doRefresh()">🔄</button>
   </header>
 
   <!-- Input Panel -->
@@ -649,11 +652,31 @@ function startSync() {
   } catch(e) { setSyncStatus('offline'); }
 }
 
+function doRefresh() {
+  const btn = document.getElementById('sync-status');
+  btn.classList.add('spinning');
+  setTimeout(() => btn.classList.remove('spinning'), 400);
+  if (shoppingRef) {
+    shoppingRef.once('value', snap => {
+      const data = snap.val();
+      if (data) {
+        items = Object.values(data).sort((a, b) => {
+          const ta = a.createdTimestamp || Math.floor(Number(a.id) || 0);
+          const tb = b.createdTimestamp || Math.floor(Number(b.id) || 0);
+          return tb - ta;
+        });
+        saveLocal(); renderList();
+      }
+      showToast('更新しました！');
+    });
+  } else {
+    loadLocal(); renderList();
+    showToast('更新しました！');
+  }
+}
+
 function setSyncStatus(s) {
-  const el = document.getElementById('sync-status');
-  if (!el) return;
-  const map = { syncing:'⟳ 同期中', ok:'✓ 同期済み', offline:'✕ オフライン', error:'! エラー' };
-  el.textContent = map[s] || '✓';
+  // sync status no longer shown; button stays as 🔄
 }
 
 // ============================================================
