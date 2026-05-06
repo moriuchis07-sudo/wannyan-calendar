@@ -129,6 +129,7 @@
     .streak-bar { background:var(--card); border-bottom:1px solid var(--border); padding:7px 16px; display:flex; align-items:center; justify-content:space-between; }
     .streak-info { font-size:13px; font-weight:700; color:var(--text); }
     .streak-badge { font-size:11px; background:var(--primary-light); color:var(--primary-dark); padding:3px 9px; border-radius:12px; font-weight:700; display:none; }
+    .last-update { font-size:11px; color:var(--text-light); margin-top:2px; }
     /* Balance chart */
     .balance-section { padding:6px 16px 4px; border-top:1px solid var(--border); width:100%; box-sizing:border-box; }
     .balance-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
@@ -220,7 +221,10 @@
   <button id="nextMonth">&#8250;</button>
 </div>
 <div class="streak-bar">
-  <div class="streak-info" id="streakInfo">📅 記録を始めよう！</div>
+  <div>
+    <div class="streak-info" id="streakInfo">📅 記録を始めよう！</div>
+    <div class="last-update" id="lastUpdate"></div>
+  </div>
   <div style="display:flex;align-items:center;gap:6px">
     <div class="streak-badge" id="streakBadge"></div>
     <button onclick="requestNotify()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:2px;" title="通知設定">🔔</button>
@@ -361,6 +365,7 @@ const QUICK_TAGS = ['ドライフード','ウェットフード','ホットフ�
 
 let currentAuthor = 'A';
 let _modalDrafts = { A: { photos: [], memo: '' }, B: { photos: [], memo: '' } };
+let _activatedAuthors = new Set(['A']);
 
 let db = null;
 let allData = {};
@@ -622,7 +627,31 @@ function renderCalendar() {
   updateBanner();
   updateStreakUI();
   updateBalance();
+  updateLastUpdateUI();
   requestAnimationFrame(fitCalendarRows);
+}
+
+function updateLastUpdateUI() {
+  const el = document.getElementById('lastUpdate');
+  if (!el) return;
+  let latestAt = 0, latestBy = null;
+  Object.values(allData).forEach(entry => {
+    ['A', 'B'].forEach(who => {
+      const a = entry[who];
+      if (a && a.updatedAt && a.updatedAt > latestAt) {
+        latestAt = a.updatedAt; latestBy = a.updatedBy || who;
+      }
+    });
+  });
+  if (!latestAt) { el.textContent = ''; return; }
+  const name = latestBy === 'A' ? '🐶 わん' : '😸 にゃん';
+  const diff = Date.now() - latestAt;
+  let t;
+  if (diff < 60000) t = 'たった今';
+  else if (diff < 3600000) t = Math.floor(diff / 60000) + '分前';
+  else if (diff < 86400000) t = Math.floor(diff / 3600000) + '時間前';
+  else t = Math.floor(diff / 86400000) + '日前';
+  el.textContent = `最終更新: ${name} ${t}`;
 }
 
 function fitCalendarRows() {
@@ -810,6 +839,7 @@ function loadAuthorDraft(who) {
 }
 
 function setAuthor(who) {
+  _activatedAuthors.add(who);
   if (selectedKey && who !== currentAuthor) {
     _modalDrafts[currentAuthor] = { photos: [...currentPhotos], memo: document.getElementById('memoInput').value };
     currentAuthor = who;
@@ -1034,6 +1064,7 @@ function openModal(key, day) {
     B: { photos: [...getPhotos(entry, 'B')], memo: getMemo(entry, 'B') }
   };
   currentAuthor = 'A';
+  _activatedAuthors = new Set(['A']);
   document.getElementById('authorBtnA').className = 'author-btn sel-a';
   document.getElementById('authorBtnB').className = 'author-btn';
   loadAuthorDraft('A');
@@ -1086,10 +1117,11 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
   if (db) {
     setSyncStatus('syncing');
-    for (const who of ['A', 'B']) {
+    const now = Date.now();
+    for (const who of _activatedAuthors) {
       const d = _modalDrafts[who];
       if (d.photos.length > 0 || d.memo) {
-        await db.ref(`entries/${key}/${who}`).set({ photos: d.photos, memo: d.memo });
+        await db.ref(`entries/${key}/${who}`).set({ photos: d.photos, memo: d.memo, updatedAt: now, updatedBy: who });
         anyPosted = true;
       } else {
         await db.ref(`entries/${key}/${who}`).remove();
